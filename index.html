@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send a Message</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a1d29;
+            color: #9ca3af;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: #9ca3af;
+        }
+
+        h1::before {
+            content: "📧 ";
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .required::after {
+            content: " *";
+            color: #ef4444;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            background-color: #262b3a;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            color: #9ca3af;
+            font-size: 14px;
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: #6b7280;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 150px;
+            font-family: Arial, sans-serif;
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 12px;
+            margin-top: -15px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 25px;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+            margin-top: 3px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .btn-send {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .btn-reset {
+            background-color: #374151;
+            color: #9ca3af;
+        }
+
+        .footer-text {
+            text-align: center;
+            font-size: 12px;
+            margin-top: 20px;
+            color: #6b7280;
+        }
+
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+
+        #output.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SEND A MESSAGE</h1>
+        
+        <form id="contactForm">
+            <label class="required">Full Name</label>
+            <input type="text" name="fullName" placeholder="John Doe" required>
+
+            <label class="required">Email Address</label>
+            <input type="email" name="email" placeholder="john@example.com" required>
+
+            <label>Phone Number</label>
+            <input type="tel" name="phone" placeholder="+251 91 234 5678">
+
+            <label class="required">Subject</label>
+            <select name="subject" required>
+                <option value="">Select a subject</option>
+                <option value="general">General Inquiry</option>
+                <option value="support">Support</option>
+                <option value="feedback">Feedback</option>
+                <option value="other">Other</option>
+            </select>
+
+            <label>Company / Organization</label>
+            <input type="text" name="company" placeholder="Your Company Name">
+
+            <label class="required">Message</label>
+            <textarea name="message" id="message" placeholder="Tell me about your project or inquiry..." maxlength="500" required></textarea>
+            <div class="char-count"><span id="charCount">0</span> / 500</div>
+
+            <div class="checkbox-container">
+                <input type="checkbox" id="newsletter" name="newsletter">
+                <label for="newsletter">Subscribe to my newsletter for updates on new projects and articles</label>
+            </div>
+
+            <div class="buttons">
+                <button type="submit" class="btn-send">📧 Send Message</button>
+                <button type="reset" class="btn-reset">🔄 Reset Form</button>
+            </div>
+
+            <p class="footer-text">Your information is secure and will never be shared with third parties</p>
+            
+            <div id="output"></div>
+        </form>
+    </div>
+
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        // Initialize EmailJS
+        (function(){
+            emailjs.init("2UnXzX9Zv5S8ZOGZU");
+        })();
+    </script>
+
+    <script>
+        // Character counter
+        const messageArea = document.getElementById('message');
+        const charCount = document.getElementById('charCount');
+
+        messageArea.addEventListener('input', function() {
+            charCount.textContent = this.value.length;
+        });
+
+        // EmailJS Configuration
+        const EMAILJS_CONFIG = {
+            serviceID: 'service_6uyx27e',
+            templateID: 'template_um2uzwl',
+            publicKey: '2UnXzX9Zv5S8ZOGZU'
+        };
+
+        // Handle form submission
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const button = document.querySelector('.btn-send');
+            const output = document.getElementById('output');
+            
+            // Disable button and show loading
+            button.disabled = true;
+            button.textContent = '⏳ Sending...';
+            button.style.opacity = '0.7';
+            
+            // Prepare template parameters
+            const templateParams = {
+                from_name: this.fullName.value,
+                from_email: this.email.value,
+                phone: this.phone.value || 'Not provided',
+                subject: this.subject.options[this.subject.selectedIndex].text,
+                company: this.company.value || 'Not provided',
+                message: this.message.value,
+                newsletter: this.newsletter.checked ? 'Yes, subscribed ✅' : 'No'
+            };
+            
+            // Send email using EmailJS
+            emailjs.send(
+                EMAILJS_CONFIG.serviceID,
+                EMAILJS_CONFIG.templateID,
+                templateParams
+            ).then(function(response) {
+                // Success
+                output.textContent = '✅ Message sent successfully! We\'ll get back to you soon.';
+                output.style.background = '#10b981';
+                output.style.color = '#ffffff';
+                output.classList.add('show');
+                
+                // Reset form
+                document.getElementById('contactForm').reset();
+                document.getElementById('charCount').textContent = '0';
+                
+                // Reset button
+                button.disabled = false;
+                button.textContent = '📧 Send Message';
+                button.style.opacity = '1';
+                
+            }, function(error) {
+                // Error
+                output.textContent = '❌ Failed to send message. Please try again.';
+                output.style.background = '#ef4444';
+                output.style.color = '#ffffff';
+                output.classList.add('show');
+                
+                // Reset button
+                button.disabled = false;
+                button.textContent = '📧 Send Message';
+                button.style.opacity = '1';
+                
+                console.error('EmailJS Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
